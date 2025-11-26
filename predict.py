@@ -7,8 +7,8 @@ from tensorflow.keras.preprocessing import image
 import numpy as np
 
 # --- 1. Configuration (MUST MATCH TRAINING!) ---
-IMG_WIDTH = 224
-IMG_HEIGHT = 224
+IMG_WIDTH = 256
+IMG_HEIGHT = 256
 MODEL_NAME = 'sericulture_pest_detector_model.h5'
 
 # IMPORTANT: These names must be in the exact order the model learned (alphabetical order of folders)
@@ -77,7 +77,7 @@ def classify_image(file_path):
     # Format and display the result
     result_text = (
         f"Prediction: {predicted_class.replace('_', ' ').title()}\n"
-        f"Confidence: {confidence:.2f}%"
+       # f"Confidence: {confidence:.2f}%"
     )
     result_label.config(text=result_text, fg="#004d00", font=('Arial', 14, 'bold'))
 
@@ -123,7 +123,7 @@ if __name__ == '__main__':
     load_trained_model()
 
     # 2. Title Label
-    title_label = tk.Label(root, text="🌿 Sericulture Disease Detector 🦠", font=('Arial', 16, 'bold'), pady=10)
+    title_label = tk.Label(root, text="🌿 Sericulture pests and disease detector 🦠", font=('Arial', 16, 'bold'), pady=10)
     title_label.pack()
 
     # 3. Browse Button
