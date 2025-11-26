@@ -117,9 +117,8 @@ def classify_image(file_path):
     )
 
 
-# ===============================
 # 6. browse image
-# ===============================
+
 def browse_image_file():
     file_path = filedialog.askopenfilename(
         title="Select image",
@@ -144,9 +143,8 @@ def browse_image_file():
         messagebox.showerror("File Error", f"Could not display image:\n{e}")
 
 
-# ===============================
 # 7. gui setup
-# ===============================
+
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("AI for Disease and Pest Prediction in Sericulture, Rwanda Model V3")
