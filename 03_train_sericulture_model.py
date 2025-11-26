@@ -9,23 +9,19 @@ from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 
-# ===========================
-# CONFIGURATION
-# ===========================
 IMG_WIDTH = 224
 IMG_HEIGHT = 224
 BATCH_SIZE = 32
 EPOCHS_PHASE_1 = 10
 EPOCHS_PHASE_2 = 10
 
-# Your dataset path
+# dataset path
 TRAIN_DIR = r"C:\Users\user\OneDrive\Desktop\auris\Notes\Y3\Computing Intelligence and Applications [CE80561]\AIforPestandDiseases\new_dataset"
-MODEL_FILENAME = "sericulture_v3_best.keras"
+MODEL_FILENAME = "sericulture_v3.keras"
 
-# ===========================
-# 1. DATA GENERATORS
-# ===========================
-print("\n1) Setting up Data Generators...")
+# 1. data generators
+
+print("\n1) Setting up data generators...")
 
 datagen = ImageDataGenerator(
     rescale=1.0/255,
@@ -39,8 +35,8 @@ datagen = ImageDataGenerator(
     validation_split=0.20
 )
 
-# Training Data
-print("   - Loading Training Data (80%)...")
+# training Data
+print("   - Loading training data (80%)...")
 train_generator = datagen.flow_from_directory(
     TRAIN_DIR,
     target_size=(IMG_WIDTH, IMG_HEIGHT),
@@ -50,8 +46,8 @@ train_generator = datagen.flow_from_directory(
     shuffle=True
 )
 
-# Validation Data
-print("   - Loading Validation Data (20%)...")
+# validation Data
+print("   - Loading validation data (20%)...")
 val_generator = datagen.flow_from_directory(
     TRAIN_DIR,
     target_size=(IMG_WIDTH, IMG_HEIGHT),
@@ -62,12 +58,11 @@ val_generator = datagen.flow_from_directory(
 )
 
 NUM_CLASSES = train_generator.num_classes
-print(f"   -> Classes Detected: {train_generator.class_indices}")
+print(f"   -> Classes detected: {train_generator.class_indices}")
 
-# ===========================
-# 2. CLASS WEIGHTS
-# ===========================
-print("\n2) Calculating Class Weights...")
+# 2. class weights
+
+print("\n2) Calculating class weights...")
 class_weights_list = class_weight.compute_class_weight(
     class_weight='balanced',
     classes=np.unique(train_generator.classes),
@@ -76,9 +71,8 @@ class_weights_list = class_weight.compute_class_weight(
 class_weights = dict(enumerate(class_weights_list))
 print(f"   -> Weights applied: {class_weights}")
 
-# ===========================
-# 3. BUILD MODEL
-# ===========================
+# 3. building model
+
 print("\n3) Building MobileNetV2 model...")
 
 base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=(IMG_WIDTH, IMG_HEIGHT, 3))
@@ -96,9 +90,8 @@ model.compile(optimizer=Adam(learning_rate=1e-4),
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
-# ===========================
-# 4. CALLBACKS
-# ===========================
+# 4. callbacks
+
 callbacks = [
     ModelCheckpoint(
         MODEL_FILENAME,
@@ -111,12 +104,10 @@ callbacks = [
     EarlyStopping(monitor='val_loss', patience=6, restore_best_weights=True, verbose=1)
 ]
 
-# ===========================
-# 5. PHASE 1 TRAINING
-# ===========================
-print(f"\n4) Phase 1: Training Head ({EPOCHS_PHASE_1} epochs)...")
+# 5. phase 1 training
 
-# FIXED: Removed manual 'steps_per_epoch' to prevent crashing
+print(f"\n4) Phase 1: Training head ({EPOCHS_PHASE_1} epochs)...")
+
 history_phase1 = model.fit(
     train_generator,
     validation_data=val_generator,
@@ -126,10 +117,9 @@ history_phase1 = model.fit(
     verbose=1
 )
 
-# ===========================
-# 6. PHASE 2 TRAINING
-# ===========================
-print(f"\n5) Phase 2: Fine-Tuning ({EPOCHS_PHASE_2} epochs)...")
+# 6. phase 2 training
+
+print(f"\n5) Phase 2: Fine-tuning ({EPOCHS_PHASE_2} epochs)...")
 
 base_model.trainable = True
 freeze_until = 120
@@ -142,7 +132,6 @@ model.compile(optimizer=Adam(learning_rate=1e-5),
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
-# FIXED: Removed manual 'steps_per_epoch' here as well
 history_phase2 = model.fit(
     train_generator,
     validation_data=val_generator,
@@ -153,4 +142,4 @@ history_phase2 = model.fit(
     verbose=1
 )
 
-print(f"\nDONE. The best version of the model is saved as: {MODEL_FILENAME}")
+print(f"\n. The best version of the model is saved as: {MODEL_FILENAME}")
