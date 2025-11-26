@@ -10,9 +10,9 @@ import os
 IMG_WIDTH = 224
 IMG_HEIGHT = 224
 
-MODEL_NAME = "sericulture_v3_best.keras"
+MODEL_NAME = "sericulture_disease_and_pest_detector_model_v3.keras"
 
-# path to dataset
+# path
 DATASET_PATH = r"C:\Users\user\OneDrive\Desktop\auris\Notes\Y3\Computing Intelligence and Applications [CE80561]\AIforPestandDiseases\new_dataset"
 
 model = None
@@ -21,13 +21,13 @@ CLASS_NAMES = []
 def get_classes_dynamically():
     global CLASS_NAMES
     try:
-        # Check if dataset folder exists
+        # Checking if dataset folder exists
         if not os.path.exists(DATASET_PATH):
             messagebox.showerror("Path Error",
                                  f"Could not find dataset folder at:\n{DATASET_PATH}\n\nCannot load class names.")
             return []
 
-        # Get all sub-folders
+        # sub-folders
         classes = [d for d in os.listdir(DATASET_PATH) if os.path.isdir(os.path.join(DATASET_PATH, d))]
         classes.sort()
 
@@ -39,18 +39,18 @@ def get_classes_dynamically():
         return []
 
 
-# 3. load model
+# 3. loading the model
 
 def load_trained_model():
     global model, CLASS_NAMES
 
-    # 1. Load classes first
+    # 1. load classes first
     CLASS_NAMES = get_classes_dynamically()
     if not CLASS_NAMES:
         root.destroy()
         return
 
-    # 2. Load Model
+    # 2. load model
     try:
         if not os.path.exists(MODEL_NAME):
             messagebox.showerror("File missing",
@@ -58,7 +58,7 @@ def load_trained_model():
             return
 
         model = load_model(MODEL_NAME, compile=False)
-        print(f"[INFO] Model '{MODEL_NAME}' loaded successfully.")
+        print(f"Model '{MODEL_NAME}' loaded successfully.")
 
     except Exception as e:
         messagebox.showerror("Model error",
@@ -163,10 +163,10 @@ if __name__ == "__main__":
     # Button
     browse_button = tk.Button(
         root,
-        text="Select image to analyze",
+        text="Select image",
         command=browse_image_file,
         font=("Arial", 12),
-        bg="#007bff",
+        bg="#4CAF50",
         fg="white",
         activebackground="#0056b3",
         padx=20,

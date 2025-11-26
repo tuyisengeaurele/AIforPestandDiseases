@@ -12,26 +12,25 @@ IMG_WIDTH = 224
 IMG_HEIGHT = 224
 BATCH_SIZE = 32
 
-# path to dataset
+# path
 DATA_DIR = r"C:\Users\user\OneDrive\Desktop\auris\Notes\Y3\Computing Intelligence and Applications [CE80561]\AIforPestandDiseases\new_dataset"
 
-# trained model file
-MODEL_PATH = "sericulture_v3_best.keras"
+# model
+MODEL_PATH = "sericulture_disease_and_pest_detector_model_v3.keras"
 
-# Output filenames for the saved images
 CONFUSION_MATRIX_FILE = "confusion_matrix.png"
 PERFORMANCE_PLOT_FILE = "performance_plot.png"
 
-# 1. load model
+# 1. loading the model
 
-print(f"Loading model from {MODEL_PATH}...")
+print(f"Loading model from {MODEL_PATH}")
 if not os.path.exists(MODEL_PATH):
     print("Error: Model file not found.")
     exit()
 
 model = load_model(MODEL_PATH)
 
-# 2. prepare validation data
+# 2. preparing validation data
 
 print("Setting up validation generator")
 
@@ -40,7 +39,6 @@ datagen = ImageDataGenerator(
     validation_split=0.20
 )
 
-# shuffle=False is CRITICAL for the Confusion Matrix to work!
 val_generator = datagen.flow_from_directory(
     DATA_DIR,
     target_size=(IMG_WIDTH, IMG_HEIGHT),
@@ -53,7 +51,7 @@ val_generator = datagen.flow_from_directory(
 class_names = list(val_generator.class_indices.keys())
 print(f"Classes found: {class_names}")
 
-# 3. run predictions
+# 3. running predictions
 
 print("Running predictions on validation set")
 
@@ -61,9 +59,9 @@ y_true = val_generator.classes
 predictions = model.predict(val_generator, steps=len(val_generator), verbose=1)
 y_pred = np.argmax(predictions, axis=1)
 
-# 4. generate metrics
+# 4. metrics
 
-print("       DETAILED PERFORMANCE REPORT")
+print("MODEL PERFORMANCE")
 
 report_dict = classification_report(y_true, y_pred, target_names=class_names, output_dict=True)
 
@@ -76,7 +74,7 @@ print("-" * 30)
 
 # 5. plot & save 1: confusion matrix
 
-print(f"Generating and saving {CONFUSION_MATRIX_FILE}...")
+print(f"Generating and saving {CONFUSION_MATRIX_FILE}")
 cm = confusion_matrix(y_true, y_pred)
 
 plt.figure(figsize=(10, 8))
@@ -88,23 +86,22 @@ plt.xlabel('Predicted Label')
 plt.title(f'Confusion matrix (Global F1: {global_f1:.2f})')
 plt.tight_layout()
 
-# save the figure
+# saving the figure
 plt.savefig(CONFUSION_MATRIX_FILE)
-print(f" -> Saved confusion matrix to: {os.path.abspath(CONFUSION_MATRIX_FILE)}")
+print(f"Saved confusion matrix to: {os.path.abspath(CONFUSION_MATRIX_FILE)}")
 plt.show()
 
 # 6. plot & save 2: performance bar chart
 
-print(f"Generating and saving {PERFORMANCE_PLOT_FILE}...")
+print(f"Generating and saving {PERFORMANCE_PLOT_FILE}")
 
-# extract F1 scores for plotting
+# extracting F1 scores for plotting
 f1_scores = [report_dict[cls]['f1-score'] for cls in class_names]
 
 plt.figure(figsize=(10, 6))
-# create bar chart
 bars = plt.bar(class_names, f1_scores, color=['#4CAF50', '#2196F3', '#FFC107', '#FF5722', '#9C27B0'])
 
-# add labels on top of bars
+# adding labels on top of bars
 for bar in bars:
     height = bar.get_height()
     plt.text(bar.get_x() + bar.get_width()/2.0, height, f'{height:.2f}',
@@ -117,7 +114,7 @@ plt.ylim(0, 1.1)
 plt.xticks(rotation=45)
 plt.tight_layout()
 
-# save the figure
+# saving the figure
 plt.savefig(PERFORMANCE_PLOT_FILE)
-print(f" -> Saved performance plot to: {os.path.abspath(PERFORMANCE_PLOT_FILE)}")
+print(f"Saved performance plot to: {os.path.abspath(PERFORMANCE_PLOT_FILE)}")
 plt.show()

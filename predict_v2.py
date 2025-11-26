@@ -5,43 +5,56 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 import numpy as np
+import os
 
-# ===============================
-# 1. CONFIG (MATCH TRAINING)
-# ===============================
 IMG_WIDTH = 224
 IMG_HEIGHT = 224
 
-MODEL_NAME = "best_sericulture_and_leaf_disease_detector_v2.h5"
+MODEL_NAME = "sericulture_disease_and_pest_detector_model_v2.h5"
 
-CLASS_NAMES = [
-    "grasserie_silkworms",
-    "healthy_silkworms",
-    "disease_free",
-    "leaf_rust",
-    "leaf_spot"
-]
+# path
+TRAIN_DIR = r"C:\Users\user\OneDrive\Desktop\auris\Notes\Y3\Computing Intelligence and Applications [CE80561]\AIforPestandDiseases\new_dataset"
 
-model = None  # global model instance
+model = None
+CLASS_NAMES = []
 
 
-# ===============================
-# 2. LOAD MODEL
-# ===============================
+# 2. class loading
+
+def load_class_names():
+    global CLASS_NAMES
+    if not os.path.exists(TRAIN_DIR):
+        messagebox.showerror("Configuration Error",
+                             f"Training directory not found:\n{TRAIN_DIR}\n\nCannot load class names.")
+        return False
+
+    # subfolders
+    try:
+        CLASS_NAMES = sorted([d for d in os.listdir(TRAIN_DIR)
+                              if os.path.isdir(os.path.join(TRAIN_DIR, d))])
+
+        print(f"Detected classes: {CLASS_NAMES}")
+        return True
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to read classes from folder:\n{e}")
+        return False
+
+
+# 3. loading the model
+
 def load_trained_model():
     global model
     try:
         model = load_model(MODEL_NAME, compile=False)
-        print(f"[INFO] Model '{MODEL_NAME}' loaded successfully.")
+        print(f"Model '{MODEL_NAME}' loaded successfully.")
     except Exception as e:
         messagebox.showerror("Model Error",
                              f"Could not load model:\n{e}\nMake sure the model file exists.")
         root.destroy()
 
 
-# ===============================
-# 3. PREPARE IMAGE
-# ===============================
+# 4. preparing image
+
 def prepare_image_for_model(img_path):
     try:
         img = Image.open(img_path).resize((IMG_WIDTH, IMG_HEIGHT))
@@ -50,18 +63,22 @@ def prepare_image_for_model(img_path):
         img_array = np.expand_dims(img_array, axis=0)
         return img_array
     except Exception as e:
-        messagebox.showerror("Processing Error",
+        messagebox.showerror("Processing error",
                              f"Error preparing image:\n{e}")
         return None
 
 
-# ===============================
-# 4. RUN PREDICTION
-# ===============================
+# 5. running prediction
+
 def classify_image(file_path):
     if model is None:
-        messagebox.showwarning("Model Not Loaded",
-                               "The AI model was not loaded correctly.")
+        messagebox.showwarning("Model not loaded",
+                               "The model was not loaded correctly.")
+        return
+
+    if not CLASS_NAMES:
+        messagebox.showwarning("Classes not loaded",
+                               "Class names could not be loaded from the dataset folder.")
         return
 
     test_array = prepare_image_for_model(file_path)
@@ -70,22 +87,23 @@ def classify_image(file_path):
 
     predictions = model.predict(test_array)
     class_index = np.argmax(predictions[0])
+
+    # Get name dynamically
     class_name = CLASS_NAMES[class_index]
     confidence = predictions[0][class_index] * 100
 
     result_label.config(
-        text=f"Prediction: {class_name.replace('_', ' ').title()}",
+        text=f"Prediction: {class_name.replace('_', ' ').title()}\nConfidence: {confidence:.2f}%",
         fg="#004d00",
         font=("Arial", 14, "bold")
     )
 
 
-# ===============================
-# 5. BROWSE IMAGE
-# ===============================
+# 6. browsing the image
+
 def browse_image_file():
     file_path = filedialog.askopenfilename(
-        title="Select Image",
+        title="Select image",
         filetypes=[("Image Files", "*.jpg *.jpeg *.png")]
     )
 
@@ -105,22 +123,23 @@ def browse_image_file():
         classify_image(file_path)
 
     except Exception as e:
-        messagebox.showerror("File Error",
+        messagebox.showerror("File error",
                              f"Could not display image:\n{e}")
 
 
-# ===============================
-# 6. GUI SETUP
-# ===============================
+# 7. gui setup
+
 if __name__ == "__main__":
     root = tk.Tk()
-    root.title("Sericulture & Leaf Disease Detector - V2")
-    root.geometry("400x550")
+    root.title("Sericulture Pests & Disease Detector - V2")
+    root.geometry("400x600")
     root.resizable(False, False)
 
-    load_trained_model()
+    if load_class_names():
+        load_trained_model()
+    else:
+        root.destroy()
 
-    # Title
     title_label = tk.Label(
         root,
         text="🦋 Sericulture & Leaf Disease Detector V2 🌿",
@@ -129,10 +148,9 @@ if __name__ == "__main__":
     )
     title_label.pack()
 
-    # Browse button
     browse_button = tk.Button(
         root,
-        text="Select Image",
+        text="Select image",
         command=browse_image_file,
         font=("Arial", 12),
         bg="#4CAF50",
@@ -141,15 +159,15 @@ if __name__ == "__main__":
     )
     browse_button.pack(pady=10)
 
-    # File path label
+
     path_label = tk.Label(root, text="No image selected", font=("Arial", 10), fg="gray")
     path_label.pack()
 
-    # Image preview
+    # image preview
     image_display_label = tk.Label(root, borderwidth=1, relief="solid")
     image_display_label.pack(pady=10)
 
-    # Result text
+    # result text
     result_label = tk.Label(root, text="Prediction will appear here.", font=("Arial", 14))
     result_label.pack(pady=10)
 

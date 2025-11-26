@@ -7,7 +7,7 @@ from tensorflow.keras.optimizers import Adam
 import os
 import numpy as np
 
-# configuration variables
+
 IMG_WIDTH = 256
 IMG_HEIGHT = 256
 BATCH_SIZE = 32
@@ -18,11 +18,11 @@ TEST_DIR = BASE_DATA_DIR + '/test'
 MODEL_NAME = 'sericulture_disease_and_pest_detector_model.h5'
 
 # data loading and augmentation
-print("1. Setting up data generators...")
+print("1. Setting up data generators")
 
 # data augmentation for training
 train_datagen = ImageDataGenerator(
-    rescale=1. / 255,  # normalization
+    rescale=1. / 255,
     rotation_range=20,
     width_shift_range=0.2,
     height_shift_range=0.2,
@@ -59,10 +59,10 @@ except Exception as e:
     exit()
 
 NUM_CLASSES = train_generator.num_classes
-print(f"   -> Successfully detected {NUM_CLASSES} classes: {list(train_generator.class_indices.keys())}")
+print(f"Successfully detected {NUM_CLASSES} classes: {list(train_generator.class_indices.keys())}")
 
 # model building (MobileNetV2 Transfer Learning)
-print("\n2. Building MobileNetV2 Model...")
+print("\n2. Building MobileNetV2 model")
 
 # 1. Loading the base model
 base_model = MobileNetV2(
@@ -90,11 +90,11 @@ model.compile(
     metrics=['accuracy']
 )
 
-print("   -> Model compiled and ready for training.")
+print("Model compiled and ready for training.")
 
 # 3. training phase 1: feature extraction
 EPOCHS_PHASE_1 = 10
-print(f"\n3. Starting Training Phase 1 ({EPOCHS_PHASE_1} Epochs - New Layers Only)...")
+print(f"\n3. Starting training phase 1 ({EPOCHS_PHASE_1} Epochs")
 
 history_1 = model.fit(
     train_generator,
@@ -104,8 +104,8 @@ history_1 = model.fit(
 )
 
 # 4. training Phase 2: fine-tuning
-EPOCHS_PHASE_2 = 10  # additional 10 epochs for fine-tuning
-print(f"\n4. Starting Training Phase 2 ({EPOCHS_PHASE_2} Epochs - Fine-Tuning)...")
+EPOCHS_PHASE_2 = 10
+print(f"\n4. Starting training phase 2 ({EPOCHS_PHASE_2} Epochs")
 
 # unfreeze the base model
 base_model.trainable = True
@@ -114,7 +114,7 @@ base_model.trainable = True
 for layer in base_model.layers[:100]:
     layer.trainable = False
 
-# recompiling the model with an even lower learning rate for fine-tuning
+# recompiling the model with a lower learning rate for fine-tuning
 model.compile(
     optimizer=Adam(learning_rate=0.00001),  # lower learning rate
     loss='categorical_crossentropy',
@@ -124,19 +124,19 @@ model.compile(
 history_2 = model.fit(
     train_generator,
     epochs=EPOCHS_PHASE_2,
-    initial_epoch=EPOCHS_PHASE_1,  # start epoch counting from where phase 1 left off
+    initial_epoch=EPOCHS_PHASE_1,
     validation_data=test_generator,
     verbose=1
 )
 
 # 5. final evaluation and saving
-print("\n5. Final Evaluation and Saving...")
+print("\n5. Final evaluation and saving")
 
 # final evaluation
 loss, accuracy = model.evaluate(test_generator)
-print(f"\n✅ Final Model Performance:")
+print(f"\nFinal model performance:")
 print(f"   Test Loss: {loss:.4f}, Test Accuracy: {accuracy:.4f}")
 
 # saving the model
 model.save(MODEL_NAME)
-print(f"   -> Model saved successfully as '{MODEL_NAME}'")
+print(f"Model saved successfully as '{MODEL_NAME}'")

@@ -17,11 +17,11 @@ EPOCHS_PHASE_2 = 10
 
 # dataset path
 TRAIN_DIR = r"C:\Users\user\OneDrive\Desktop\auris\Notes\Y3\Computing Intelligence and Applications [CE80561]\AIforPestandDiseases\new_dataset"
-MODEL_FILENAME = "sericulture_v3.keras"
+MODEL_FILENAME = "sericulture_disease_and_pest_detector_model_v3.keras"
 
 # 1. data generators
 
-print("\n1) Setting up data generators...")
+print("\n1) Setting up data generators")
 
 datagen = ImageDataGenerator(
     rescale=1.0/255,
@@ -36,7 +36,7 @@ datagen = ImageDataGenerator(
 )
 
 # training Data
-print("   - Loading training data (80%)...")
+print("Loading training data (80%)")
 train_generator = datagen.flow_from_directory(
     TRAIN_DIR,
     target_size=(IMG_WIDTH, IMG_HEIGHT),
@@ -47,7 +47,7 @@ train_generator = datagen.flow_from_directory(
 )
 
 # validation Data
-print("   - Loading validation data (20%)...")
+print("Loading validation data (20%)")
 val_generator = datagen.flow_from_directory(
     TRAIN_DIR,
     target_size=(IMG_WIDTH, IMG_HEIGHT),
@@ -58,22 +58,22 @@ val_generator = datagen.flow_from_directory(
 )
 
 NUM_CLASSES = train_generator.num_classes
-print(f"   -> Classes detected: {train_generator.class_indices}")
+print(f"Classes detected: {train_generator.class_indices}")
 
 # 2. class weights
 
-print("\n2) Calculating class weights...")
+print("\n2) Calculating class weights")
 class_weights_list = class_weight.compute_class_weight(
     class_weight='balanced',
     classes=np.unique(train_generator.classes),
     y=train_generator.classes
 )
 class_weights = dict(enumerate(class_weights_list))
-print(f"   -> Weights applied: {class_weights}")
+print(f"Weights applied: {class_weights}")
 
 # 3. building model
 
-print("\n3) Building MobileNetV2 model...")
+print("\n3) Building MobileNetV2 model")
 
 base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=(IMG_WIDTH, IMG_HEIGHT, 3))
 base_model.trainable = False
@@ -106,7 +106,7 @@ callbacks = [
 
 # 5. phase 1 training
 
-print(f"\n4) Phase 1: Training head ({EPOCHS_PHASE_1} epochs)...")
+print(f"\n4) Phase 1: Training head ({EPOCHS_PHASE_1} epochs)")
 
 history_phase1 = model.fit(
     train_generator,
@@ -119,7 +119,7 @@ history_phase1 = model.fit(
 
 # 6. phase 2 training
 
-print(f"\n5) Phase 2: Fine-tuning ({EPOCHS_PHASE_2} epochs)...")
+print(f"\n5) Phase 2: Fine-tuning ({EPOCHS_PHASE_2} epochs)")
 
 base_model.trainable = True
 freeze_until = 120
@@ -142,4 +142,4 @@ history_phase2 = model.fit(
     verbose=1
 )
 
-print(f"\n. The best version of the model is saved as: {MODEL_FILENAME}")
+print(f"\n. Model saved successfully as {MODEL_FILENAME}")
