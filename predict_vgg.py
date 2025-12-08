@@ -4,14 +4,14 @@ from PIL import Image, ImageTk
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.resnet50 import preprocess_input
+from tensorflow.keras.applications.vgg16 import preprocess_input
 import numpy as np
 import os
 
 IMG_WIDTH = 224
 IMG_HEIGHT = 224
 
-MODEL_NAME = "sericulture_resnet50_model.keras"
+MODEL_NAME = "sericulture_vgg16_model.keras"
 
 # path
 DATASET_PATH = r"C:\Users\user\OneDrive\Desktop\auris\Notes\Y3\Computing Intelligence and Applications [CE80561]\AIforPestandDiseases\new_dataset"
@@ -87,7 +87,6 @@ def prepare_image_for_model(img_path):
         messagebox.showerror("Processing error", f"Error preparing image:\n{e}")
         return None
 
-
 # 5. run prediction
 
 def classify_image(file_path):
@@ -155,14 +154,14 @@ def browse_image_file():
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.title("Sericulture Pest and Disease Detector (ResNet50)")
+    root.title("Sericulture Pest and Disease Detector (VGG16)")
     root.geometry("450x600")
     root.resizable(False, False)
 
     # Header
     title_label = tk.Label(
         root,
-        text="Sericulture ResNet50 Detector",
+        text="Sericulture VGG16 Detector",
         font=("Helvetica", 16, "bold"),
         pady=15
     )
@@ -174,9 +173,9 @@ if __name__ == "__main__":
         text="Select image",
         command=browse_image_file,
         font=("Arial", 12),
-        bg="#4CAF50",
+        bg="#673AB7",
         fg="white",
-        activebackground="#0056b3",
+        activebackground="#512DA8",
         padx=20,
         pady=10
     )

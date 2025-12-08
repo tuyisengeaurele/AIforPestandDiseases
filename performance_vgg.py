@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import load_model
-from tensorflow.keras.applications.resnet50 import preprocess_input
+from tensorflow.keras.applications.vgg16 import preprocess_input
 from sklearn.metrics import classification_report, confusion_matrix, f1_score
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -16,10 +16,10 @@ BATCH_SIZE = 32
 # path
 DATA_DIR = r"C:\Users\user\OneDrive\Desktop\auris\Notes\Y3\Computing Intelligence and Applications [CE80561]\AIforPestandDiseases\new_dataset"
 
-MODEL_PATH = "sericulture_resnet50_model.keras"
+MODEL_PATH = "sericulture_vgg16_model.keras"
 
-CONFUSION_MATRIX_FILE = "confusion_matrix_resnet.png"
-PERFORMANCE_PLOT_FILE = "performance_plot_resnet.png"
+CONFUSION_MATRIX_FILE = "confusion_matrix_vgg16.png"
+PERFORMANCE_PLOT_FILE = "performance_plot_vgg16.png"
 
 # 1. loading the model
 
@@ -61,7 +61,7 @@ y_pred = np.argmax(predictions, axis=1)
 
 # 4. metrics
 
-print("MODEL PERFORMANCE (ResNet50)")
+print("MODEL PERFORMANCE (VGG16)")
 
 report_dict = classification_report(y_true, y_pred, target_names=class_names, output_dict=True)
 
@@ -83,7 +83,7 @@ sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
             yticklabels=class_names)
 plt.ylabel('Actual Label')
 plt.xlabel('Predicted Label')
-plt.title(f'ResNet50 Confusion Matrix (Global F1: {global_f1:.2f})')
+plt.title(f'VGG16 Confusion Matrix (Global F1: {global_f1:.2f})')
 plt.tight_layout()
 
 # saving the figure
@@ -99,7 +99,8 @@ print(f"Generating and saving {PERFORMANCE_PLOT_FILE}")
 f1_scores = [report_dict[cls]['f1-score'] for cls in class_names]
 
 plt.figure(figsize=(10, 6))
-bars = plt.bar(class_names, f1_scores, color=['#4CAF50', '#2196F3', '#FFC107', '#FF5722', '#9C27B0'])
+# CHANGED: Using different color scheme for VGG16 to distinguish it
+bars = plt.bar(class_names, f1_scores, color=['#9C27B0', '#E91E63', '#673AB7', '#3F51B5', '#2196F3'])
 
 # adding labels on top of bars
 for bar in bars:
@@ -107,7 +108,7 @@ for bar in bars:
     plt.text(bar.get_x() + bar.get_width()/2.0, height, f'{height:.2f}',
              ha='center', va='bottom')
 
-plt.title('ResNet50 F1-score per class')
+plt.title('VGG16 F1-score per class')
 plt.xlabel('Disease Class')
 plt.ylabel('F1 Score (0.0 - 1.0)')
 plt.ylim(0, 1.1)

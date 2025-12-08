@@ -3,8 +3,8 @@ import numpy as np
 import tensorflow as tf
 from sklearn.utils import class_weight
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.applications import ResNet50
-from tensorflow.keras.applications.resnet50 import preprocess_input
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.applications.vgg16 import preprocess_input
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
 from tensorflow.keras.optimizers import Adam
@@ -18,15 +18,15 @@ EPOCHS_PHASE_2 = 10
 
 # dataset path
 TRAIN_DIR = r"C:\Users\user\OneDrive\Desktop\auris\Notes\Y3\Computing Intelligence and Applications [CE80561]\AIforPestandDiseases\new_dataset"
-# CHANGED: Updated model name
-MODEL_FILENAME = "sericulture_resnet50_model.keras"
+MODEL_FILENAME = "sericulture_vgg16_model.keras"
 
 # 1. data generators
 
 print("\n1) Setting up data generators")
 
+# VGG16 preprocessing function
 datagen = ImageDataGenerator(
-    preprocessing_function=preprocess_input, # Replaces rescale=1.0/255
+    preprocessing_function=preprocess_input,
     rotation_range=30,
     width_shift_range=0.2,
     height_shift_range=0.2,
@@ -75,10 +75,11 @@ print(f"Weights applied: {class_weights}")
 
 # 3. building model
 
-print("\n3) Building ResNet50 model")
+print("\n3) Building VGG16 model")
 
-# instantiating ResNet50
-base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(IMG_WIDTH, IMG_HEIGHT, 3))
+# CHANGED: Instantiating VGG16
+# VGG16 is a sequential stack of convolution blocks
+base_model = VGG16(weights='imagenet', include_top=False, input_shape=(IMG_WIDTH, IMG_HEIGHT, 3))
 base_model.trainable = False
 
 x = base_model.output
@@ -120,13 +121,18 @@ history_phase1 = model.fit(
     verbose=1
 )
 
-# 6. phase 2 training
+# 6. phase 2 fine tuning
 
 print(f"\n5) Phase 2: Fine-tuning ({EPOCHS_PHASE_2} epochs)")
 
 base_model.trainable = True
 
-freeze_until = 120
+# CHANGED: VGG16 is much smaller than ResNet. It only has about 19 layers.
+# Freezing up to layer 15 keeps Blocks 1-4 frozen and allows Block 5 to train.
+freeze_until = 15
+
+print(f"Freezing VGG16 layers 0 to {freeze_until}, unfreezing the rest...")
+
 for layer in base_model.layers[:freeze_until]:
     layer.trainable = False
 for layer in base_model.layers[freeze_until:]:
@@ -140,7 +146,7 @@ history_phase2 = model.fit(
     train_generator,
     validation_data=val_generator,
     epochs=EPOCHS_PHASE_2,
-    initial_epoch=len(history_phase1.history['loss']),
+    initial_epoch=len(history_phase1.history['loss']), # Ensures continuity in epoch numbering
     callbacks=callbacks,
     class_weight=class_weights,
     verbose=1
